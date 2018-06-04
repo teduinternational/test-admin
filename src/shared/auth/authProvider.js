@@ -1,4 +1,5 @@
 import { AUTH_LOGIN, AUTH_LOGOUT, AUTH_ERROR, AUTH_CHECK } from 'react-admin';
+import config from './../helpers/config';
 
 export default (type, params) => {
     // called when the user attempts to log in
@@ -6,7 +7,7 @@ export default (type, params) => {
         if (type === AUTH_LOGIN) {
             const { username, password } = params;
             var data = "grant_type=password&username=" + username + "&password=" + password;
-            const request = new Request('http://localhost:5000/oauth/token', {
+            const request = new Request(config.apiUrl + '/oauth/token', {
                 method: 'POST',
                 body: data,
                 headers: new Headers({ 'Content-Type': 'application/x-www-form-urlencoded' }),
@@ -18,8 +19,9 @@ export default (type, params) => {
                     }
                     return response.json();
                 })
-                .then(({ token }) => {
-                    localStorage.setItem('token', token);
+                .then(function (data) {
+                    
+                    localStorage.setItem('loginResult', JSON.stringify(data));
                 });
         }
         return Promise.resolve();
@@ -31,7 +33,7 @@ export default (type, params) => {
     }
     // called when the API returns an error
     if (type === AUTH_ERROR) {
-        const status  = params.status;
+        const status = params.status;
         if (status === 401 || status === 403) {
             localStorage.removeItem('token');
             return Promise.reject();
